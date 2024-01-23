@@ -105,7 +105,7 @@ async function run() {
                 const user = await usersCollection.findOne({ email: data.email });
                 console.log(user);
                 if (data.task == 'login') {
-                    if (!user.id) {
+                    if (!user._id) {
                         res.status(401).json({ error: "User not found!" });
                     } else {
                         if (user.password === data.password) {
