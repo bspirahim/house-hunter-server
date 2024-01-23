@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express()
 const port = process.env.PORT || 5000;
 
@@ -41,12 +41,36 @@ async function run() {
         res.send(result);
     })
 
+    app.get('/house/:id', async(req, res)=>{
+        const id = req.params.id;
+        const bookings = await houseCollection.findOne({ _id: new ObjectId(id) })
+        res.send(bookings)
+    })
+
     app.post('/house', async(req, res)=>{
         const newHouse = req.body;
-        console.log(newHouse);
         const result = await houseCollection.insertOne(newHouse);
         res.send(result);
     })
+
+    app.put('/house/:id', async (req, res) => {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const options = { upsert: true };
+        const updatedHouse = req.body;
+        const house = {
+          $set: updatedHouse
+        }
+        const result = await houseCollection.updateOne(filter, house, options)
+        res.send(result)
+      })
+
+      app.delete("/house/:id", async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await houseCollection.deleteOne(query);
+        res.send(result);
+      });
 
 
 
