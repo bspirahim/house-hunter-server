@@ -45,6 +45,7 @@ function verifyJWT(req, res, next) {
 
 //JWT Token Create
 const CreateJWT = function (user) {
+    delete user.password;
     const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "24h",
     });
@@ -69,16 +70,16 @@ async function run() {
         app.get('/house/:id', async (req, res) => {
             const id = req.params.id;
             const bookings = await houseCollection.findOne({ _id: new ObjectId(id) })
-            res.send(bookings)
+            res.send(bookings);
         })
 
-        app.post('/house', async (req, res) => {
+        app.post('/house', verifyJWT, async (req, res) => {
             const newHouse = req.body;
             const result = await houseCollection.insertOne(newHouse);
             res.send(result);
         })
 
-        app.put('/house/:id', async (req, res) => {
+        app.put('/house/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
             const options = { upsert: true };
@@ -90,7 +91,7 @@ async function run() {
             res.send(result)
         })
 
-        app.delete("/house/:id", async (req, res) => {
+        app.delete("/house/:id", verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const result = await houseCollection.deleteOne(query);
@@ -98,6 +99,9 @@ async function run() {
         });
 
 
+        app.post("/auth-status", verifyJWT, async (req, res) => {
+            res.send({ user: req.decoded });
+        });
         //login
         app.post("/auth", async (req, res) => {
             const data = req.body;
